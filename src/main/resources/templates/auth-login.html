@@ -1,0 +1,34 @@
+<div th:replace="layout/main :: layout(~{::section})" xmlns:th="http://www.thymeleaf.org">
+    <section>
+        <div class="container" style="max-width: 500px; margin: 0 auto;">
+            <div class="card p-5">
+                <div class="text-center mb-4">
+                    <div style="font-size: 4rem;" class="mb-2">🔐</div>
+                    <h2 class="h1 mb-1">Welcome Back</h2>
+                    <p class="muted mt-1">Sign in to your trading account</p>
+                </div>
+
+                <div th:if="${param.error}" class="flash danger">
+                    Invalid username or password
+                </div>
+
+                <form class="form" method="post" th:action="@{/auth/login}">
+                    <div>
+                        <label for="username">👤 Username</label>
+                        <input id="username" name="username" type="text" placeholder="Enter your username" autocomplete="username" required autofocus>
+                    </div>
+                    <div>
+                        <label for="password">🔒 Password</label>
+                        <input id="password" name="password" type="password" placeholder="Enter your password" autocomplete="current-password" required>
+                    </div>
+                    <button class="btn btn-primary" type="submit" style="width: 100%;">🚀 Sign In</button>
+                </form>
+
+                <div class="mt-4 text-center">
+                    <p class="muted">Don't have an account?</p>
+                    <a class="btn btn-secondary mt-2" th:href="@{/auth/register}" style="width: 100%;">✨ Create Account</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

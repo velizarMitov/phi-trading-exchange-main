@@ -1,0 +1,64 @@
+<div th:replace="layout/main :: layout(~{::section})" xmlns:th="http://www.thymeleaf.org">
+    <section>
+        <h2 class="h1 mb-4">📈 Buy Stocks</h2>
+
+        <div class="grid cols-2">
+            <div class="card">
+                <h3 class="h2 mb-3">Place Order</h3>
+                <form class="form" method="post" th:action="@{/trade/buy}">
+                    <div>
+                        <label for="symbol">📊 Stock Symbol</label>
+                        <input id="symbol" name="symbol" type="text" placeholder="e.g. AAPL, TSLA, NVDA" required style="text-transform: uppercase;">
+                    </div>
+                    <div>
+                        <label for="quantity">📦 Quantity</label>
+                        <input id="quantity" name="quantity" type="number" step="1" min="1" placeholder="Enter number of shares" required>
+                    </div>
+                    <div>
+                        <label for="currentPrice">💰 Current Market Price</label>
+                        <input id="currentPrice" type="text" th:value="${currentPrice} ?: 'Loading...'" placeholder="Fetching price..." readonly style="background: #f7fafc; font-weight: 700; color: #667eea;">
+                    </div>
+                    <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); padding: 16px; border-radius: 12px; margin-top: 8px;">
+                        <div class="muted mb-1" style="font-size: 0.9rem;">Estimated Total</div>
+                        <div class="h2" style="color: #667eea; margin: 0;" th:text="${estimatedTotal} ?: 'Calculate'">Calculate</div>
+                    </div>
+                    <button class="btn btn-primary" type="submit" style="width: 100%; margin-top: 8px;">🚀 Execute Buy Order</button>
+                </form>
+            </div>
+
+            <div class="card" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));">
+                <h3 class="h2 mb-3">💼 Your Position</h3>
+                <div th:if="${position != null}">
+                    <div style="padding: 16px; background: white; border-radius: 12px; margin-bottom: 12px;">
+                        <div class="muted mb-1">Current Holdings</div>
+                        <div class="h1" style="color: #667eea;" th:text="${position.quantity} + ' shares'">0 shares</div>
+                    </div>
+                    <div style="padding: 16px; background: white; border-radius: 12px; margin-bottom: 12px;">
+                        <div class="muted mb-1">Average Price</div>
+                        <div class="h2" th:text="${position.averagePrice}">$0.00</div>
+                    </div>
+                    <div style="padding: 16px; background: white; border-radius: 12px;">
+                        <div class="muted mb-1">Total Value</div>
+                        <div class="h2" style="color: #48bb78;" th:text="${position.totalValue}">$0.00</div>
+                    </div>
+                </div>
+                <div th:if="${position == null}" style="text-align: center; padding: 40px 24px;">
+                    <div style="font-size: 4rem; margin-bottom: 16px; opacity: 0.3;">📊</div>
+                    <p class="muted">You don't own any shares of this stock yet</p>
+                    <p class="muted" style="font-size: 0.9rem;">Place an order to start building your position</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4" style="background: linear-gradient(135deg, rgba(72, 187, 120, 0.05), rgba(56, 161, 105, 0.05)); border-color: rgba(72, 187, 120, 0.3);">
+            <h3 class="h2 mb-2">💡 Trading Tips</h3>
+            <ul style="margin: 0; padding-left: 24px; color: var(--text-secondary);">
+                <li style="margin-bottom: 8px;">Research the company before investing</li>
+                <li style="margin-bottom: 8px;">Diversify your portfolio across different sectors</li>
+                <li style="margin-bottom: 8px;">Consider your risk tolerance and investment timeline</li>
+                <li>Never invest more than you can afford to lose</li>
+            </ul>
+        </div>
+    </section>
+</div>
+

@@ -1,0 +1,36 @@
+<div th:replace="layout/main :: layout(~{::section})" xmlns:th="http://www.thymeleaf.org">
+    <section>
+        <div class="hero mb-5">
+            <h1 class="h1">Welcome to Phi-Trading Exchange</h1>
+            <p class="muted mb-4">Your gateway to smart stock trading and investment</p>
+            <div class="hero-actions">
+                <a class="btn btn-primary" th:href="@{/auth/register}">🚀 Get Started</a>
+                <a class="btn btn-secondary" th:href="@{/auth/login}">🔐 Sign In</a>
+            </div>
+        </div>
+
+        <div class="grid cols-3 mt-5">
+            <div class="card hoverable">
+                <div style="font-size: 3rem; margin-bottom: 16px;">📈</div>
+                <h3 class="h2">Real-Time Trading</h3>
+                <p class="muted">Buy and sell stocks instantly with live market prices and instant execution</p>
+            </div>
+            <div class="card hoverable">
+                <div style="font-size: 3rem; margin-bottom: 16px;">💼</div>
+                <h3 class="h2">Smart Portfolio</h3>
+                <p class="muted">Track your investments with detailed analytics and performance metrics</p>
+            </div>
+            <div class="card hoverable">
+                <div style="font-size: 3rem; margin-bottom: 16px;">🎯</div>
+                <h3 class="h2">Market Insights</h3>
+                <p class="muted">Get real-time market data and make informed investment decisions</p>
+            </div>
+        </div>
+
+        <div class="card mt-5 p-5 text-center">
+            <h2 class="h2">Why Choose Phi-Trading?</h2>
+            <p class="muted mb-3">Experience the next generation of stock trading with our cutting-edge platform. Secure, fast, and built for serious investors.</p>
+            <a class="btn btn-primary mt-2" th:href="@{/dashboard}">📊 Explore Dashboard</a>
+        </div>
+    </section>
+</div>

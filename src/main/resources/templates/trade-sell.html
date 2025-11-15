@@ -1,0 +1,69 @@
+<div th:replace="layout/main :: layout(~{::section})" xmlns:th="http://www.thymeleaf.org">
+    <section>
+        <h2 class="h1 mb-4">📉 Sell Stocks</h2>
+
+        <div class="grid cols-2">
+            <div class="card">
+                <h3 class="h2 mb-3">Place Sell Order</h3>
+                <form class="form" method="post" th:action="@{/trade/sell}">
+                    <div>
+                        <label for="symbol">📊 Stock Symbol</label>
+                        <input id="symbol" name="symbol" type="text" placeholder="e.g. AAPL, TSLA, NVDA" required style="text-transform: uppercase;">
+                    </div>
+                    <div>
+                        <label for="quantity">📦 Quantity to Sell</label>
+                        <input id="quantity" name="quantity" type="number" step="1" min="1" placeholder="Enter number of shares" required>
+                    </div>
+                    <div>
+                        <label for="currentPrice">💰 Current Market Price</label>
+                        <input id="currentPrice" type="text" th:value="${currentPrice} ?: 'Loading...'" placeholder="Fetching price..." readonly style="background: #f7fafc; font-weight: 700; color: #f56565;">
+                    </div>
+                    <div style="background: linear-gradient(135deg, rgba(245, 101, 101, 0.1), rgba(229, 62, 62, 0.1)); padding: 16px; border-radius: 12px; margin-top: 8px;">
+                        <div class="muted mb-1" style="font-size: 0.9rem;">Estimated Proceeds</div>
+                        <div class="h2" style="color: #f56565; margin: 0;" th:text="${estimatedProceeds} ?: 'Calculate'">Calculate</div>
+                    </div>
+                    <button class="btn btn-danger" type="submit" style="width: 100%; margin-top: 8px;">💸 Execute Sell Order</button>
+                </form>
+            </div>
+
+            <div class="card" style="background: linear-gradient(135deg, rgba(245, 101, 101, 0.05), rgba(229, 62, 62, 0.05));">
+                <h3 class="h2 mb-3">💼 Your Position</h3>
+                <div th:if="${position != null}">
+                    <div style="padding: 16px; background: white; border-radius: 12px; margin-bottom: 12px;">
+                        <div class="muted mb-1">Available to Sell</div>
+                        <div class="h1" style="color: #f56565;" th:text="${position.quantity} + ' shares'">0 shares</div>
+                    </div>
+                    <div style="padding: 16px; background: white; border-radius: 12px; margin-bottom: 12px;">
+                        <div class="muted mb-1">Average Purchase Price</div>
+                        <div class="h2" th:text="${position.averagePrice}">$0.00</div>
+                    </div>
+                    <div style="padding: 16px; background: white; border-radius: 12px; margin-bottom: 12px;">
+                        <div class="muted mb-1">Current Value</div>
+                        <div class="h2" style="color: #667eea;" th:text="${position.currentValue}">$0.00</div>
+                    </div>
+                    <div style="padding: 16px; background: white; border-radius: 12px;">
+                        <div class="muted mb-1">Unrealized P/L</div>
+                        <div class="h2" th:style="${position.profitLoss >= 0} ? 'color: #48bb78;' : 'color: #f56565;'" th:text="${position.profitLoss}">$0.00</div>
+                    </div>
+                </div>
+                <div th:if="${position == null}" style="text-align: center; padding: 40px 24px;">
+                    <div style="font-size: 4rem; margin-bottom: 16px; opacity: 0.3;">❌</div>
+                    <p class="muted">You don't own any shares of this stock</p>
+                    <p class="muted" style="font-size: 0.9rem;">Buy some shares first before you can sell</p>
+                    <a class="btn btn-primary mt-3" th:href="@{/trade/buy}">Buy Shares</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4" style="background: linear-gradient(135deg, rgba(237, 100, 166, 0.05), rgba(219, 39, 119, 0.05)); border-color: rgba(237, 100, 166, 0.3);">
+            <h3 class="h2 mb-2">⚠️ Important Reminders</h3>
+            <ul style="margin: 0; padding-left: 24px; color: var(--text-secondary);">
+                <li style="margin-bottom: 8px;">You can only sell shares you currently own</li>
+                <li style="margin-bottom: 8px;">Sales are executed at current market price</li>
+                <li style="margin-bottom: 8px;">Consider tax implications of selling</li>
+                <li>Funds from sales are immediately available</li>
+            </ul>
+        </div>
+    </section>
+</div>
+
