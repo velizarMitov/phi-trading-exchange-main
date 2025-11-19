@@ -1,4 +1,4 @@
-<div th:replace="layout/main :: layout(~{::section})" xmlns:th="http://www.thymeleaf.org">
+<div th:replace="~{layout/main :: layout(~{::section})}" xmlns:th="http://www.thymeleaf.org">
     <section>
         <h2 class="h1 mb-4">⚙️ Admin Panel - Manage Symbols</h2>
 
@@ -45,33 +45,31 @@
                 <span class="badge success">Active</span>
             </div>
 
-            <div th:if="${symbols != null and !symbols.isEmpty()}">
+            <div th:if="${instruments != null and !instruments.isEmpty()}">
                 <div class="table-wrapper">
                     <table class="table">
                         <thead>
                             <tr>
                                 <th>Symbol</th>
-                                <th>Company Name</th>
-                                <th>Current Price</th>
-                                <th>Last Updated</th>
-                                <th>Actions</th>
+                                <th>Name</th>
+                                <th>Last Price</th>
+                                <th>Previous Close</th>
+                                <th>Updated At</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:each="symbol : ${symbols}">
-                                <td><strong th:text="${symbol.code}">AAPL</strong></td>
-                                <td th:text="${symbol.name}">Apple Inc.</td>
-                                <td class="h3" style="color: #48bb78; margin: 0;" th:text="${symbol.price}">$150.00</td>
-                                <td class="muted" th:text="${symbol.updated}">2025-11-15</td>
-                                <td>
-                                    <button class="btn btn-danger" style="padding: 8px 16px; font-size: 0.9rem;">🗑️ Delete</button>
-                                </td>
+                            <tr th:each="ins : ${instruments}">
+                                <td><strong th:text="${ins.symbol}">AAPL</strong></td>
+                                <td th:text="${ins.name}">Apple Inc.</td>
+                                <td th:text="${ins.lastPrice}">$150.00</td>
+                                <td th:text="${ins.previousClose}">$149.00</td>
+                                <td class="muted" th:text="${ins.updatedAt}">2025-11-15T10:00:00</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-            <div th:if="${symbols == null or symbols.isEmpty()}" style="text-align: center; padding: 60px 24px;">
+            <div th:if="${instruments == null or instruments.isEmpty()}" style="text-align: center; padding: 60px 24px;">
                 <div style="font-size: 5rem; margin-bottom: 16px; opacity: 0.3;">📊</div>
                 <p class="muted" style="font-size: 1.2rem;">No symbols added yet</p>
                 <p class="muted">Add your first trading symbol to get started</p>

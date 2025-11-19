@@ -1,52 +1,63 @@
-<div th:replace="layout/main :: layout(~{::section})" xmlns:th="http://www.thymeleaf.org">
+<div th:replace="~{layout/main :: layout(~{::section})}" xmlns:th="http://www.thymeleaf.org">
     <section>
         <h2 class="h1 mb-4">📈 Buy Stocks</h2>
+
+        <div th:if="${success}" class="alert success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert danger" th:text="${error}"></div>
 
         <div class="grid cols-2">
             <div class="card">
                 <h3 class="h2 mb-3">Place Order</h3>
-                <form class="form" method="post" th:action="@{/trade/buy}">
+                <form class="form" method="post" th:action="@{/trade/buy}" th:object="${form}">
                     <div>
                         <label for="symbol">📊 Stock Symbol</label>
-                        <input id="symbol" name="symbol" type="text" placeholder="e.g. AAPL, TSLA, NVDA" required style="text-transform: uppercase;">
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <select id="symbol" class="input" th:field="*{symbol}" required>
+                                <option value="" th:selected="${selectedSymbol == null}">Select a symbol</option>
+                                <option th:each="ins : ${instruments}"
+                                        th:value="${ins.symbol}"
+                                        th:selected="${#strings.equalsIgnoreCase(ins.symbol, selectedSymbol)}"
+                                        th:text="${ins.symbol} + ' – ' + ${ins.name} + ' (' + ${#numbers.formatDecimal(ins.lastPrice, 1, 'POINT', 2, 'POINT')} + ')'">
+                                    AAPL – Apple Inc. (150.00)
+                                </option>
+                            </select>
+                            <a class="btn" th:href="@{/trade/buy(symbol=${form.symbol})}">Load</a>
+                        </div>
+                        <div class="text-error" th:if="${#fields.hasErrors('symbol')}" th:errors="*{symbol}"></div>
                     </div>
                     <div>
                         <label for="quantity">📦 Quantity</label>
-                        <input id="quantity" name="quantity" type="number" step="1" min="1" placeholder="Enter number of shares" required>
-                    </div>
-                    <div>
-                        <label for="currentPrice">💰 Current Market Price</label>
-                        <input id="currentPrice" type="text" th:value="${currentPrice} ?: 'Loading...'" placeholder="Fetching price..." readonly style="background: #f7fafc; font-weight: 700; color: #667eea;">
-                    </div>
-                    <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); padding: 16px; border-radius: 12px; margin-top: 8px;">
-                        <div class="muted mb-1" style="font-size: 0.9rem;">Estimated Total</div>
-                        <div class="h2" style="color: #667eea; margin: 0;" th:text="${estimatedTotal} ?: 'Calculate'">Calculate</div>
+                        <input id="quantity" th:field="*{quantity}" type="number" step="1" min="1" placeholder="Enter number of shares" required>
+                        <div class="text-error" th:if="${#fields.hasErrors('quantity')}" th:errors="*{quantity}"></div>
                     </div>
                     <button class="btn btn-primary" type="submit" style="width: 100%; margin-top: 8px;">🚀 Execute Buy Order</button>
                 </form>
             </div>
 
             <div class="card" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));">
-                <h3 class="h2 mb-3">💼 Your Position</h3>
-                <div th:if="${position != null}">
-                    <div style="padding: 16px; background: white; border-radius: 12px; margin-bottom: 12px;">
-                        <div class="muted mb-1">Current Holdings</div>
-                        <div class="h1" style="color: #667eea;" th:text="${position.quantity} + ' shares'">0 shares</div>
-                    </div>
-                    <div style="padding: 16px; background: white; border-radius: 12px; margin-bottom: 12px;">
-                        <div class="muted mb-1">Average Price</div>
-                        <div class="h2" th:text="${position.averagePrice}">$0.00</div>
-                    </div>
-                    <div style="padding: 16px; background: white; border-radius: 12px;">
-                        <div class="muted mb-1">Total Value</div>
-                        <div class="h2" style="color: #48bb78;" th:text="${position.totalValue}">$0.00</div>
+                <h3 class="h2 mb-3">ℹ️ Instrument Info</h3>
+                <div th:if="${selectedSymbol != null}" class="mb-2">
+                    <div class="muted">Selected</div>
+                    <div class="h2" th:text="${selectedSymbol}">AAPL</div>
+                </div>
+                <div class="mb-2">
+                    <div class="muted">Current Price</div>
+                    <div class="h1" th:text="${currentPrice != null ? #numbers.formatDecimal(currentPrice, 1, 'POINT', 2, 'POINT') : '—'}">—</div>
+                </div>
+                <div th:if="${currentPosition != null}">
+                    <div class="muted">Your Position</div>
+                    <div style="display:flex; gap:16px; margin-top:6px;">
+                        <div>
+                            <div class="muted">Quantity</div>
+                            <div class="h2" th:text="${#numbers.formatDecimal(currentPosition.quantity, 1, 'POINT', 0, 'POINT')}">0</div>
+                        </div>
+                        <div>
+                            <div class="muted">Avg Price</div>
+                            <div class="h2" th:text="${#numbers.formatDecimal(currentPosition.averagePrice, 1, 'POINT', 2, 'POINT')}">$0.00</div>
+                        </div>
                     </div>
                 </div>
-                <div th:if="${position == null}" style="text-align: center; padding: 40px 24px;">
-                    <div style="font-size: 4rem; margin-bottom: 16px; opacity: 0.3;">📊</div>
-                    <p class="muted">You don't own any shares of this stock yet</p>
-                    <p class="muted" style="font-size: 0.9rem;">Place an order to start building your position</p>
-                </div>
+                <div th:if="${currentPosition == null}" class="muted" style="margin-top: 8px;">Select a symbol to see your holdings and live price.</div>
             </div>
         </div>
 

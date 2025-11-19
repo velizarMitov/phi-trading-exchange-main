@@ -1,4 +1,4 @@
-<div th:replace="layout/main :: layout(~{::section})" xmlns:th="http://www.thymeleaf.org">
+<div th:replace="~{layout/main :: layout(~{::section})}" xmlns:th="http://www.thymeleaf.org">
     <section>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
             <h2 class="h1" style="margin: 0;">📋 My Orders</h2>
@@ -18,28 +18,33 @@
                             <tr>
                                 <th>Date</th>
                                 <th>Symbol</th>
-                                <th>Type</th>
+                                <th>Side</th>
                                 <th>Quantity</th>
                                 <th>Price</th>
-                                <th>Total</th>
                                 <th>Status</th>
+                                <th>Realized P/L</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:each="order : ${orders}">
-                                <td th:text="${order.date}">2025-11-15</td>
-                                <td><strong th:text="${order.symbol}">AAPL</strong></td>
+                            <tr th:each="o : ${orders}">
+                                <td th:text="${o.executedAt != null ? #temporals.format(o.executedAt, 'yyyy-MM-dd HH:mm') : #temporals.format(o.createdAt, 'yyyy-MM-dd HH:mm')}">2025-11-15 12:00</td>
+                                <td><strong th:text="${o.symbol}">AAPL</strong></td>
                                 <td>
-                                    <span th:if="${order.type == 'BUY'}" style="color: #48bb78; font-weight: 700;">📈 BUY</span>
-                                    <span th:if="${order.type == 'SELL'}" style="color: #f56565; font-weight: 700;">📉 SELL</span>
+                                    <span th:if="${o.side == 'BUY'}" style="color: #16a34a; font-weight: 700;">BUY</span>
+                                    <span th:if="${o.side == 'SELL'}" style="color: #dc2626; font-weight: 700;">SELL</span>
                                 </td>
-                                <td th:text="${order.quantity}">10</td>
-                                <td th:text="${order.price}">$150.00</td>
-                                <td th:text="${order.total}">$1,500.00</td>
+                                <td th:text="${#numbers.formatDecimal(o.quantity, 1, 'POINT', 0, 'POINT')}">10</td>
+                                <td th:text="${#numbers.formatDecimal(o.executionPrice, 1, 'POINT', 2, 'POINT')}">$150.00</td>
                                 <td>
-                                    <span class="badge success" th:if="${order.status == 'FILLED'}" th:text="${order.status}">FILLED</span>
-                                    <span class="badge pending" th:if="${order.status == 'PENDING'}" th:text="${order.status}">PENDING</span>
-                                    <span class="badge canceled" th:if="${order.status == 'CANCELED'}" th:text="${order.status}">CANCELED</span>
+                                    <span class="badge"
+                                          th:classappend="${o.status == 'EXECUTED' ? ' success' : (o.status == 'PENDING' ? ' pending' : ' canceled')}"
+                                          th:text="${o.status}">EXECUTED</span>
+                                </td>
+                                <td>
+                                    <span th:if="${o.realizedPnl != null}"
+                                          th:class="${o.realizedPnlSign == 'positive' ? 'pnl-positive' : (o.realizedPnlSign == 'negative' ? 'pnl-negative' : 'pnl-zero')}"
+                                          th:text="${#numbers.formatDecimal(o.realizedPnl, 1, 'POINT', 2, 'POINT')}">$0.00</span>
+                                    <span th:if="${o.realizedPnl == null}" class="muted">-</span>
                                 </td>
                             </tr>
                         </tbody>

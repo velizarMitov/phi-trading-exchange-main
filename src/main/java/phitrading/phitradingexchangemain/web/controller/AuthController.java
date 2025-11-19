@@ -9,19 +9,19 @@ import phitrading.phitradingexchangemain.web.dto.RegisterRequest;
 @RequestMapping("/auth")
 public class AuthController {
 
+    private final com.phitrading.exchange.domain.service.RegistrationService registrationService;
+
+    public AuthController(com.phitrading.exchange.domain.service.RegistrationService registrationService) {
+        this.registrationService = registrationService;
+    }
+
     @GetMapping("/login")
     public String login(Model model) {
         model.addAttribute("pageTitle", "Login");
         return "auth-login";
     }
 
-    @PostMapping("/login")
-    public String loginSubmit(@RequestParam String username, @RequestParam String password, Model model) {
-        // TODO: Implement user authentication with Spring Security
-        // For now, redirect to dashboard on any submission
-        model.addAttribute("username", username);
-        return "redirect:/dashboard";
-    }
+    // Note: POST /auth/login is handled by Spring Security formLogin. Do not implement here.
 
     @GetMapping("/register")
     public String register(Model model) {
@@ -34,7 +34,6 @@ public class AuthController {
 
     @PostMapping("/register")
     public String registerSubmit(@ModelAttribute RegisterRequest registerRequest, Model model) {
-        // TODO: Implement user registration logic
         // Validate password match
         if (!registerRequest.getPassword().equals(registerRequest.getConfirmPassword())) {
             model.addAttribute("error", "Passwords do not match");
@@ -42,8 +41,13 @@ public class AuthController {
             return "auth-register";
         }
 
-        // TODO: Save user to database
-        // For now, redirect to login
-        return "redirect:/auth/login";
+        try {
+            registrationService.registerNewUser(registerRequest.getUsername(), registerRequest.getEmail(), registerRequest.getPassword());
+            return "redirect:/auth/login?registered";
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("error", ex.getMessage());
+            model.addAttribute("registerRequest", registerRequest);
+            return "auth-register";
+        }
     }
 }

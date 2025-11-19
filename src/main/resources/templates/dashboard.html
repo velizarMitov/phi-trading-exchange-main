@@ -1,10 +1,10 @@
-<div th:replace="layout/main :: layout(~{::section})" xmlns:th="http://www.thymeleaf.org">
+<div th:replace="~{layout/main :: layout(~{::section})}" xmlns:th="http://www.thymeleaf.org">
     <section>
         <div class="mb-4">
             <div class="grid cols-2">
                 <div>
                     <h2 class="h1 mb-1">📊 Dashboard</h2>
-                    <p class="muted">Welcome back, <span th:text="${username} ?: 'Trader'">Trader</span>! 👋</p>
+                    <p class="muted">Welcome back! 👋</p>
                 </div>
                 <div class="text-right">
                     <a class="btn btn-primary" th:href="@{/trade/buy}">⚡ Quick Trade</a>
@@ -12,61 +12,100 @@
             </div>
         </div>
 
+        <!-- Top Stat Cards -->
         <div class="grid cols-3">
             <div class="card hoverable">
-                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 12px;">
-                    <div style="font-size: 2.5rem;">💰</div>
-                    <div>
-                        <h3 class="muted" style="font-size: 0.9rem; margin: 0; font-weight: 600;">Cash Balance</h3>
-                    </div>
-                </div>
-                <p class="h1" th:text="${cashBalance} ?: '$10,000.00'">$10,000.00</p>
+                <div class="muted mb-1" style="font-weight: 600;">🎯 Account Value</div>
+                <div class="h1" th:text="${#numbers.formatDecimal(dashboard.totalAccountValue, 1, 'POINT', 2, 'POINT')}">$0.00</div>
+                <div class="muted">Cash + portfolio</div>
             </div>
             <div class="card hoverable">
-                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 12px;">
-                    <div style="font-size: 2.5rem;">📈</div>
-                    <div>
-                        <h3 class="muted" style="font-size: 0.9rem; margin: 0; font-weight: 600;">Portfolio Value</h3>
-                    </div>
-                </div>
-                <p class="h1" th:text="${portfolioValue} ?: '$0.00'">$0.00</p>
+                <div class="muted mb-1" style="font-weight: 600;">📈 Unrealized P/L</div>
+                <div class="h1"
+                     th:classappend="${dashboard.totalPnlAbs > 0 ? ' pnl-positive' : (dashboard.totalPnlAbs < 0 ? ' pnl-negative' : ' pnl-zero')}"
+                     th:text="${#numbers.formatDecimal(dashboard.totalPnlAbs, 1, 'POINT', 2, 'POINT')}">$0.00</div>
+                <div class="muted" th:text="${#numbers.formatDecimal(dashboard.totalPnlPct, 1, 'POINT', 2, 'POINT')} + '%'">0.00%</div>
             </div>
             <div class="card hoverable">
-                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 12px;">
-                    <div style="font-size: 2.5rem;">🎯</div>
-                    <div>
-                        <h3 class="muted" style="font-size: 0.9rem; margin: 0; font-weight: 600;">Account Value</h3>
-                    </div>
-                </div>
-                <p class="h1" th:text="${accountValue} ?: '$10,000.00'">$10,000.00</p>
+                <div class="muted mb-1" style="font-weight: 600;">💰 Cash Balance</div>
+                <div class="h1" th:text="${#numbers.formatDecimal(dashboard.cashBalance, 1, 'POINT', 2, 'POINT')}">$0.00</div>
             </div>
         </div>
 
-        <div class="grid cols-3 mt-4">
-            <div class="card">
-                <div class="muted mb-1" style="font-weight: 600;">📋 Open Orders</div>
-                <div class="h2" th:text="${openOrdersCount} ?: '0'">0</div>
-            </div>
-            <div class="card">
-                <div class="muted mb-1" style="font-weight: 600;">💼 Positions</div>
-                <div class="h2" th:text="${positionsCount} ?: '0'">0</div>
-            </div>
-            <div class="card">
-                <div class="muted mb-1" style="font-weight: 600;">📊 Total Trades</div>
-                <div class="h2" th:text="${totalTrades} ?: '0'">0</div>
-            </div>
-        </div>
-
+        <!-- Top Positions -->
         <div class="card mt-5">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                <h3 class="h2" style="margin: 0;">🕐 Recent Activity</h3>
-                <span class="badge pending">Live</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 class="h2" style="margin: 0;">🏆 Top Positions</h3>
+                <a class="btn" th:href="@{/portfolio}">View All</a>
             </div>
-            <div style="text-align: center; padding: 48px 24px;">
-                <div style="font-size: 4rem; margin-bottom: 16px; opacity: 0.3;">📭</div>
-                <p class="muted" style="font-size: 1.1rem;">No recent activity yet</p>
-                <p class="muted">Start trading to see your activity here</p>
-                <a class="btn btn-secondary mt-3" th:href="@{/trade/buy}">Make Your First Trade</a>
+            <div th:if="${dashboard.topPositions != null and !dashboard.topPositions.isEmpty()}">
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Quantity</th>
+                            <th>Avg Price</th>
+                            <th>Current Price</th>
+                            <th>P/L</th>
+                            <th>P/L%</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="row : ${dashboard.topPositions}">
+                            <td><strong th:text="${row.symbol}">AAPL</strong></td>
+                            <td th:text="${#numbers.formatDecimal(row.quantity, 1, 'POINT', 0, 'POINT')}">0</td>
+                            <td th:text="${#numbers.formatDecimal(row.averagePrice, 1, 'POINT', 2, 'POINT')}">$0.00</td>
+                            <td th:text="${#numbers.formatDecimal(row.currentPrice, 1, 'POINT', 2, 'POINT')}">$0.00</td>
+                            <td th:class="${row.pnlAbs > 0 ? 'pnl-positive' : (row.pnlAbs < 0 ? 'pnl-negative' : 'pnl-zero')}"
+                                th:text="${#numbers.formatDecimal(row.pnlAbs, 1, 'POINT', 2, 'POINT')}">$0.00</td>
+                            <td th:class="${row.pnlPct > 0 ? 'pnl-positive' : (row.pnlPct < 0 ? 'pnl-negative' : 'pnl-zero')}"
+                                th:text="${#numbers.formatDecimal(row.pnlPct, 1, 'POINT', 2, 'POINT')} + '%'">0.00%</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div th:if="${dashboard.topPositions == null or dashboard.topPositions.isEmpty()}" class="muted" style="text-align:center; padding: 24px;">
+                No positions yet. <a th:href="@{/trade/buy}">Buy your first stock</a>.
+            </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="card mt-4">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 class="h2" style="margin: 0;">🕐 Recent Orders</h3>
+                <a class="btn" th:href="@{/orders}">View All</a>
+            </div>
+            <div th:if="${dashboard.recentOrders != null and !dashboard.recentOrders.isEmpty()}">
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Symbol</th>
+                            <th>Side</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="o : ${dashboard.recentOrders}">
+                            <td th:text="${o.executedAt != null ? #temporals.format(o.executedAt, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
+                            <td><strong th:text="${o.symbol}">AAPL</strong></td>
+                            <td>
+                                <span th:if="${o.side} == 'BUY'" class="badge success">BUY</span>
+                                <span th:if="${o.side} == 'SELL'" class="badge canceled" style="background:#3b0f0f; border-color:#7f1d1d; color:#fca5a5;">SELL</span>
+                            </td>
+                            <td th:text="${#numbers.formatDecimal(o.quantity, 1, 'POINT', 0, 'POINT')}">0</td>
+                            <td th:text="${#numbers.formatDecimal(o.executionPrice, 1, 'POINT', 2, 'POINT')}">$0.00</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div th:if="${dashboard.recentOrders == null or dashboard.recentOrders.isEmpty()}" style="text-align:center; padding: 24px;" class="muted">
+                No recent orders.
             </div>
         </div>
     </section>

@@ -1,28 +1,38 @@
-<div th:replace="layout/main :: layout(~{::section})" xmlns:th="http://www.thymeleaf.org">
+<div th:replace="~{layout/main :: layout(~{::section})}" xmlns:th="http://www.thymeleaf.org">
     <section>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
             <h2 class="h1" style="margin: 0;">💼 My Portfolio</h2>
             <a class="btn btn-primary" th:href="@{/trade/buy}">➕ Add Position</a>
         </div>
 
-        <div class="grid cols-3 mb-4">
+        <div class="grid cols-4 mb-4">
             <div class="card hoverable">
-                <div class="muted mb-1" style="font-weight: 600;">📊 Total Value</div>
-                <div class="h1" style="color: #667eea;" th:text="${totalValue} ?: '$0.00'">$0.00</div>
+                <div class="muted mb-1" style="font-weight: 600;">💰 Total Cost</div>
+                <div class="h1" style="color: #9ca3af;"
+                     th:text="${#numbers.formatDecimal(portfolio.totalCost, 1, 'POINT', 2, 'POINT')}">$0.00</div>
             </div>
             <div class="card hoverable">
-                <div class="muted mb-1" style="font-weight: 600;">📈 Total Gain/Loss</div>
-                <div class="h1" style="color: #48bb78;" th:text="${totalGainLoss} ?: '$0.00'">$0.00</div>
+                <div class="muted mb-1" style="font-weight: 600;">📊 Current Value</div>
+                <div class="h1" style="color: #667eea;"
+                     th:text="${#numbers.formatDecimal(portfolio.totalCurrentValue, 1, 'POINT', 2, 'POINT')}">$0.00</div>
             </div>
             <div class="card hoverable">
-                <div class="muted mb-1" style="font-weight: 600;">🎯 Return %</div>
-                <div class="h1" style="color: #764ba2;" th:text="${returnPercent} ?: '0%'">0%</div>
+                <div class="muted mb-1" style="font-weight: 600;">📈 Total P/L</div>
+                <div class="h1"
+                     th:classappend="${portfolio.totalPnlAbs > 0 ? ' pnl-positive' : (portfolio.totalPnlAbs < 0 ? ' pnl-negative' : ' pnl-zero')}"
+                     th:text="${#numbers.formatDecimal(portfolio.totalPnlAbs, 1, 'POINT', 2, 'POINT')}">$0.00</div>
+            </div>
+            <div class="card hoverable">
+                <div class="muted mb-1" style="font-weight: 600;">🎯 Total P/L%</div>
+                <div class="h1"
+                     th:classappend="${portfolio.totalPnlPct > 0 ? ' pnl-positive' : (portfolio.totalPnlPct < 0 ? ' pnl-negative' : ' pnl-zero')}"
+                     th:text="${#numbers.formatDecimal(portfolio.totalPnlPct, 1, 'POINT', 2, 'POINT')} + '%'">0.00%</div>
             </div>
         </div>
 
         <div class="card">
             <h3 class="h2 mb-4">Your Holdings</h3>
-            <div th:if="${positions != null and !positions.isEmpty()}">
+            <div th:if="${portfolio != null and portfolio.rows != null and !portfolio.rows.isEmpty()}">
                 <div class="table-wrapper">
                     <table class="table">
                         <thead>
@@ -31,32 +41,31 @@
                                 <th>Quantity</th>
                                 <th>Avg Price</th>
                                 <th>Current Price</th>
-                                <th>Total Value</th>
-                                <th>Gain/Loss</th>
+                                <th>P/L</th>
+                                <th>P/L%</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:each="pos : ${positions}">
-                                <td><strong th:text="${pos.symbol}">AAPL</strong></td>
-                                <td th:text="${pos.quantity}">10</td>
-                                <td th:text="${pos.avgPrice}">$150.00</td>
-                                <td th:text="${pos.currentPrice}">$160.00</td>
-                                <td th:text="${pos.totalValue}">$1,600.00</td>
+                            <tr th:each="row : ${portfolio.rows}">
+                                <td><strong th:text="${row.symbol}">AAPL</strong></td>
+                                <td th:text="${#numbers.formatDecimal(row.quantity, 1, 'POINT', 0, 'POINT')}">10</td>
+                                <td th:text="${#numbers.formatDecimal(row.averagePrice, 1, 'POINT', 2, 'POINT')}">$150.00</td>
+                                <td th:text="${#numbers.formatDecimal(row.currentPrice, 1, 'POINT', 2, 'POINT')}">$160.00</td>
+                                <td th:class="${row.pnlAbs > 0 ? 'pnl-positive' : (row.pnlAbs < 0 ? 'pnl-negative' : 'pnl-zero')}"
+                                    th:text="${#numbers.formatDecimal(row.pnlAbs, 1, 'POINT', 2, 'POINT')}">$0.00</td>
+                                <td th:class="${row.pnlPct > 0 ? 'pnl-positive' : (row.pnlPct < 0 ? 'pnl-negative' : 'pnl-zero')}"
+                                    th:text="${#numbers.formatDecimal(row.pnlPct, 1, 'POINT', 2, 'POINT')} + '%'">0.00%</td>
                                 <td>
-                                    <span class="badge success" th:if="${pos.gainLoss > 0}" th:text="${pos.gainLoss}">+$100</span>
-                                    <span class="badge canceled" th:if="${pos.gainLoss < 0}" th:text="${pos.gainLoss}">-$50</span>
-                                    <span class="badge pending" th:if="${pos.gainLoss == 0}">$0.00</span>
-                                </td>
-                                <td>
-                                    <a class="btn btn-danger" style="padding: 8px 16px; font-size: 0.9rem;" th:href="@{/trade/sell(symbol=${pos.symbol})}">Sell</a>
+                                    <a class="btn btn-danger" style="padding: 8px 16px; font-size: 0.9rem;"
+                                       th:href="@{/trade/sell(symbol=${row.symbol})}">Sell</a>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-            <div th:if="${positions == null or positions.isEmpty()}" style="text-align: center; padding: 60px 24px;">
+            <div th:if="${portfolio == null or portfolio.rows == null or portfolio.rows.isEmpty()}" style="text-align: center; padding: 60px 24px;">
                 <div style="font-size: 5rem; margin-bottom: 16px; opacity: 0.3;">📊</div>
                 <p class="muted" style="font-size: 1.2rem;">Your portfolio is empty</p>
                 <p class="muted">Start building your investment portfolio today</p>
