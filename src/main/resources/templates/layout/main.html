@@ -10,8 +10,18 @@
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 <body>
+    <!-- Global Navbar -->
     <header class="navbar">
-        <a class="brand" th:href="@{/}">Phi-Trading Exchange</a>
+        <div class="nav-left">
+            <a class="brand" th:href="@{/}">
+                <span class="brand-mark">Φ</span>
+                <span class="brand-name">Phi‑Trading Exchange</span>
+            </a>
+        </div>
+        <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation"/>
+        <label for="nav-toggle" class="burger" aria-hidden="true">
+            <span></span><span></span><span></span>
+        </label>
         <nav class="navbar-right" role="navigation">
             <a th:href="@{/}">Home</a>
             <a th:href="@{/dashboard}">Dashboard</a>
@@ -19,13 +29,21 @@
             <a th:href="@{/orders}">Orders</a>
             <a th:href="@{/trade/buy}">Trade</a>
             <span sec:authorize="hasRole('ADMIN')">
-                <a th:href="@{/admin/symbols}">Admin Panel</a>
+                <a th:href="@{/admin/symbols}">Admin</a>
             </span>
-            <a th:href="@{/profile}">Profile</a>
-            <a th:href="@{/auth/login}">Login</a>
+            <span sec:authorize="isAuthenticated()">
+                <a th:href="@{/profile}">Profile</a>
+            </span>
+            <span sec:authorize="!isAuthenticated()">
+                <a class="btn btn-ghost" th:href="@{/auth/login}">Login</a>
+            </span>
+            <form sec:authorize="isAuthenticated()" th:action="@{/auth/logout}" method="post" class="logout-form">
+                <button type="submit" class="btn btn-secondary">Logout</button>
+            </form>
         </nav>
     </header>
 
+    <!-- Main Content Container -->
     <main class="container">
         <div class="flash-container">
             <div th:if="${message}" class="flash success" th:text="${message}"></div>
@@ -35,7 +53,7 @@
     </main>
 
     <footer class="footer text-center">
-        <small>© Phi-Trading Exchange <span th:text="${#temporals.format(#temporals.createNow(), 'yyyy')}">2025</span></small>
+        <small>© Phi‑Trading Exchange <span th:text="${#temporals.format(#temporals.createNow(), 'yyyy')}">2025</span></small>
     </footer>
 </body>
 </html>

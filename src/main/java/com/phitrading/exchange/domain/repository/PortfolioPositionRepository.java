@@ -12,4 +12,7 @@ public interface PortfolioPositionRepository extends JpaRepository<PortfolioPosi
 
     // Fetch all positions for a given username
     java.util.List<PortfolioPosition> findAllByUser_Username(String username);
+
+    // Count positions for a given username
+    long countByUser_Username(String username);
 }

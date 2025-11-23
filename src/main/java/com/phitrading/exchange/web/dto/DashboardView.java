@@ -1,5 +1,6 @@
 package com.phitrading.exchange.web.dto;
 
+import com.phitrading.exchange.common.CurrencyCode;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -22,4 +23,8 @@ public class DashboardView {
 
     @Singular
     List<RecentOrderView> recentOrders;
+
+    // Currency presentation layer
+    CurrencyCode activeCurrency;
+    List<CurrencyCode> supportedCurrencies;
 }

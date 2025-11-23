@@ -12,4 +12,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
 
     // Latest 3 executed orders for dashboard
     List<Order> findTop3ByUser_UsernameAndStatusOrderByExecutedAtDesc(String username, Order.OrderStatus status);
+
+    // Count executed orders for a user
+    long countByUser_UsernameAndStatus(String username, Order.OrderStatus status);
 }
