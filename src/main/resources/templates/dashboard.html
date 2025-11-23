@@ -12,69 +12,84 @@
             </div>
         </div>
 
-        <!-- Top Stat Cards -->
+        <!-- Top Stat Cards (3 columns) -->
         <div class="grid cols-3">
-            <div class="card hoverable">
-                <div class="muted mb-1" style="font-weight: 600;">🎯 Account Value</div>
+            <div class="card">
+                <div class="muted mb-1" style="font-weight: 600;">Total Account Value</div>
                 <div class="h1" th:text="${#numbers.formatDecimal(dashboard.totalAccountValue, 1, 'POINT', 2, 'POINT')}">$0.00</div>
                 <div class="muted">Cash + portfolio</div>
             </div>
-            <div class="card hoverable">
-                <div class="muted mb-1" style="font-weight: 600;">📈 Unrealized P/L</div>
-                <div class="h1"
-                     th:classappend="${dashboard.totalPnlAbs > 0 ? ' pnl-positive' : (dashboard.totalPnlAbs < 0 ? ' pnl-negative' : ' pnl-zero')}"
-                     th:text="${#numbers.formatDecimal(dashboard.totalPnlAbs, 1, 'POINT', 2, 'POINT')}">$0.00</div>
-                <div class="muted" th:text="${#numbers.formatDecimal(dashboard.totalPnlPct, 1, 'POINT', 2, 'POINT')} + '%'">0.00%</div>
-            </div>
-            <div class="card hoverable">
-                <div class="muted mb-1" style="font-weight: 600;">💰 Cash Balance</div>
+            <div class="card">
+                <div class="muted mb-1" style="font-weight: 600;">Cash Balance</div>
                 <div class="h1" th:text="${#numbers.formatDecimal(dashboard.cashBalance, 1, 'POINT', 2, 'POINT')}">$0.00</div>
             </div>
+            <div class="card">
+                <div class="muted mb-1" style="font-weight: 600;">Total P/L</div>
+                <div class="h1"
+                     th:classappend="${dashboard.totalPnlAbs > 0 ? ' badge success' : (dashboard.totalPnlAbs < 0 ? ' badge canceled' : '')}"
+                     th:text="${#numbers.formatDecimal(dashboard.totalPnlAbs, 1, 'POINT', 2, 'POINT')}">$0.00</div>
+                <div class="muted"><span th:text="${#numbers.formatDecimal(dashboard.totalPnlPct, 1, 'POINT', 2, 'POINT')}">0.00</span>%</div>
+            </div>
         </div>
 
-        <!-- Top Positions -->
-        <div class="card mt-5">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h3 class="h2" style="margin: 0;">🏆 Top Positions</h3>
-                <a class="btn" th:href="@{/portfolio}">View All</a>
-            </div>
-            <div th:if="${dashboard.topPositions != null and !dashboard.topPositions.isEmpty()}">
-                <div class="table-wrapper">
-                    <table class="table">
-                        <thead>
-                        <tr>
-                            <th>Symbol</th>
-                            <th>Quantity</th>
-                            <th>Avg Price</th>
-                            <th>Current Price</th>
-                            <th>P/L</th>
-                            <th>P/L%</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr th:each="row : ${dashboard.topPositions}">
-                            <td><strong th:text="${row.symbol}">AAPL</strong></td>
-                            <td th:text="${#numbers.formatDecimal(row.quantity, 1, 'POINT', 0, 'POINT')}">0</td>
-                            <td th:text="${#numbers.formatDecimal(row.averagePrice, 1, 'POINT', 2, 'POINT')}">$0.00</td>
-                            <td th:text="${#numbers.formatDecimal(row.currentPrice, 1, 'POINT', 2, 'POINT')}">$0.00</td>
-                            <td th:class="${row.pnlAbs > 0 ? 'pnl-positive' : (row.pnlAbs < 0 ? 'pnl-negative' : 'pnl-zero')}"
-                                th:text="${#numbers.formatDecimal(row.pnlAbs, 1, 'POINT', 2, 'POINT')}">$0.00</td>
-                            <td th:class="${row.pnlPct > 0 ? 'pnl-positive' : (row.pnlPct < 0 ? 'pnl-negative' : 'pnl-zero')}"
-                                th:text="${#numbers.formatDecimal(row.pnlPct, 1, 'POINT', 2, 'POINT')} + '%'">0.00%</td>
-                        </tr>
-                        </tbody>
-                    </table>
+        <!-- Middle Section: Positions + Account Stats -->
+        <div class="grid cols-2 mt-5">
+            <!-- Positions overview (left) -->
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 class="h2" style="margin: 0;">Positions overview</h3>
+                    <a class="btn" th:href="@{/portfolio}">View All</a>
+                </div>
+                <div th:if="${dashboard.topPositions != null and !dashboard.topPositions.isEmpty()}">
+                    <div class="table-wrapper">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Quantity</th>
+                                <th>Current Value</th>
+                                <th>P/L</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="row, itStat : ${dashboard.topPositions}">
+                                <td><strong th:text="${row.symbol}">AAPL</strong></td>
+                                <td th:text="${#numbers.formatDecimal(row.quantity, 1, 'POINT', 0, 'POINT')}">0</td>
+                                <td th:text="${#numbers.formatDecimal(row.currentPrice != null && row.quantity != null ? row.currentPrice.multiply(row.quantity) : 0, 1, 'POINT', 2, 'POINT')}">$0.00</td>
+                                <td>
+                                    <span th:classappend="${row.pnlAbs > 0 ? 'badge success' : (row.pnlAbs < 0 ? 'badge canceled' : 'badge')}"
+                                          th:text="${#numbers.formatDecimal(row.pnlAbs, 1, 'POINT', 2, 'POINT')}">$0.00</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div th:if="${dashboard.topPositions == null or dashboard.topPositions.isEmpty()}" class="muted" style="text-align:center; padding: 24px;">
+                    No positions yet. <a th:href="@{/trade/buy}">Buy your first stock</a>.
                 </div>
             </div>
-            <div th:if="${dashboard.topPositions == null or dashboard.topPositions.isEmpty()}" class="muted" style="text-align:center; padding: 24px;">
-                No positions yet. <a th:href="@{/trade/buy}">Buy your first stock</a>.
+
+            <!-- Account stats (right) -->
+            <div class="card">
+                <h3 class="h2" style="margin-bottom: 12px;">Account stats</h3>
+                <ul class="list-unstyled">
+                    <li style="margin-bottom: 6px;">Positions: <strong th:text="${dashboard.topPositions != null ? dashboard.topPositions.size() : 0}">0</strong></li>
+                    <li style="margin-bottom: 6px;">Executed orders: <strong>—</strong></li>
+                    <li style="margin-bottom: 6px;">Open orders: <strong>—</strong></li>
+                    <li style="margin-top: 6px;">Portfolio value: <strong th:text="${#numbers.formatDecimal(dashboard.totalCurrentValue, 1, 'POINT', 2, 'POINT')}">$0.00</strong></li>
+                </ul>
+                <div style="margin-top: 12px; display:flex; gap:8px;">
+                    <a class="btn btn-primary" th:href="@{/portfolio}">Go to Portfolio</a>
+                    <a class="btn" th:href="@{/orders}">Go to Orders</a>
+                </div>
             </div>
         </div>
 
-        <!-- Recent Orders -->
+        <!-- Recent Trades -->
         <div class="card mt-4">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h3 class="h2" style="margin: 0;">🕐 Recent Orders</h3>
+                <h3 class="h2" style="margin: 0;">Recent Trades</h3>
                 <a class="btn" th:href="@{/orders}">View All</a>
             </div>
             <div th:if="${dashboard.recentOrders != null and !dashboard.recentOrders.isEmpty()}">
@@ -82,11 +97,12 @@
                     <table class="table">
                         <thead>
                         <tr>
-                            <th>Date</th>
+                            <th>Date/Time</th>
                             <th>Symbol</th>
                             <th>Side</th>
                             <th>Quantity</th>
                             <th>Price</th>
+                            <th>Status</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -95,17 +111,20 @@
                             <td><strong th:text="${o.symbol}">AAPL</strong></td>
                             <td>
                                 <span th:if="${o.side} == 'BUY'" class="badge success">BUY</span>
-                                <span th:if="${o.side} == 'SELL'" class="badge canceled" style="background:#3b0f0f; border-color:#7f1d1d; color:#fca5a5;">SELL</span>
+                                <span th:if="${o.side} == 'SELL'" class="badge canceled">SELL</span>
                             </td>
                             <td th:text="${#numbers.formatDecimal(o.quantity, 1, 'POINT', 0, 'POINT')}">0</td>
                             <td th:text="${#numbers.formatDecimal(o.executionPrice, 1, 'POINT', 2, 'POINT')}">$0.00</td>
+                            <td>
+                                <span class="badge success">EXECUTED</span>
+                            </td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
             <div th:if="${dashboard.recentOrders == null or dashboard.recentOrders.isEmpty()}" style="text-align:center; padding: 24px;" class="muted">
-                No recent orders.
+                No data yet.
             </div>
         </div>
     </section>
