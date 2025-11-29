@@ -1,21 +1,15 @@
-(function() {
-  const canvas = document.getElementById('priceChart');
-  if (!canvas) return; // Only run on /charts page
+(function () {
+  // Multiple compact charts inside cards on /charts page
+  const canvases = Array.from(document.querySelectorAll('canvas.market-chart-canvas'));
+  if (!canvases.length) return;
 
-  const ctx = canvas.getContext('2d');
-  const symbolSelect = document.getElementById('symbolSelect');
-  const timeframeButtons = Array.from(document.querySelectorAll('.timeframe'));
-  const currentSymbolEl = document.getElementById('currentSymbol');
-  const currentPriceEl = document.getElementById('currentPrice');
-
-  let chart = null;
-  let currentSymbol = canvas.getAttribute('data-selected-symbol') || (symbolSelect ? symbolSelect.value : 'AAPL');
-  let currentPoints = 60;
+  const charts = new Map();
+  const DEFAULT_POINTS = 60;
 
   function fmtTime(iso) {
     try {
       const d = new Date(iso);
-      return d.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } catch (e) {
       return iso;
     }
@@ -27,105 +21,82 @@
     return num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
-  async function loadChartData(symbol, points) {
-    try {
-      const res = await fetch(`/api/chart-data?symbol=${encodeURIComponent(symbol)}&points=${encodeURIComponent(points)}`, { credentials: 'same-origin' });
-      if (!res.ok) {
-        // Try to parse error body
-        try {
-          const err = await res.json();
-          // eslint-disable-next-line no-console
-          console.warn('Chart data error:', err);
-        } catch (_) {}
-        return;
-      }
-      const payload = await res.json();
-      const pts = Array.isArray(payload.points) ? payload.points : [];
-      const labels = pts.map(p => fmtTime(p.timestamp));
-      const data = pts.map(p => Number(p.price));
-      if (!Array.isArray(data) || data.length === 0) return;
+  async function fetchSeries(symbol, points) {
+    const res = await fetch(`/api/chart-data?symbol=${encodeURIComponent(symbol)}&points=${encodeURIComponent(points)}`, { credentials: 'same-origin' });
+    if (!res.ok) return null;
+    try { return await res.json(); } catch (_) { return null; }
+  }
 
-      // Update summary under chart
-      if (currentSymbolEl) currentSymbolEl.textContent = payload.symbol || symbol;
-      if (currentPriceEl) currentPriceEl.textContent = fmtPrice(payload.currentPrice);
-
-      if (!chart) {
-        chart = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: symbol,
-              data: data,
-              borderColor: 'rgba(80, 200, 120, 1)',
-              backgroundColor: 'rgba(80, 200, 120, 0.1)',
-              borderWidth: 2,
-              pointRadius: 0,
-              tension: 0.25,
-              fill: false
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false },
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    const v = context.parsed.y;
-                    return ' ' + fmtPrice(v);
-                  }
-                }
-              }
-            },
-            scales: {
-              x: { display: true, ticks: { maxTicksLimit: 8 } },
-              y: { display: true, ticks: { callback: (v)=> fmtPrice(v) } }
+  function buildConfig(symbol, labels, data) {
+    return {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: symbol,
+          data,
+          borderColor: 'rgba(80, 200, 120, 1)',
+          backgroundColor: 'rgba(80, 200, 120, 0.12)',
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0.25,
+          fill: false
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ' ' + fmtPrice(ctx.parsed.y)
             }
           }
-        });
-        // Make parent card give canvas some height if not already
-        if (canvas.parentElement && !canvas.style.height) {
-          canvas.style.height = '360px';
+        },
+        scales: {
+          x: {
+            ticks: { maxTicksLimit: 4 },
+            grid: { display: false }
+          },
+          y: {
+            ticks: { maxTicksLimit: 4, callback: (v) => fmtPrice(v) },
+            grid: { color: 'rgba(148, 163, 184, 0.15)' }
+          }
         }
-      } else {
-        chart.data.labels = labels;
-        chart.data.datasets[0].data = data;
-        chart.data.datasets[0].label = symbol;
-        chart.update('none');
       }
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.warn('Failed to load chart data', e);
+    };
+  }
+
+  async function loadCanvas(canvas) {
+    const symbol = canvas.getAttribute('data-symbol');
+    if (!symbol) return;
+    const payload = await fetchSeries(symbol, DEFAULT_POINTS);
+    if (!payload || !Array.isArray(payload.points) || !payload.points.length) return;
+    const labels = payload.points.map(p => fmtTime(p.timestamp));
+    const data = payload.points.map(p => Number(p.price));
+
+    const ctx = canvas.getContext('2d');
+    const chart = new Chart(ctx, buildConfig(symbol, labels, data));
+    charts.set(canvas, { symbol, chart });
+  }
+
+  async function refreshAll() {
+    for (const [canvas, meta] of charts.entries()) {
+      const payload = await fetchSeries(meta.symbol, DEFAULT_POINTS);
+      if (!payload || !Array.isArray(payload.points) || !payload.points.length) continue;
+      const labels = payload.points.map(p => fmtTime(p.timestamp));
+      const data = payload.points.map(p => Number(p.price));
+      meta.chart.data.labels = labels;
+      meta.chart.data.datasets[0].data = data;
+      meta.chart.update('none');
     }
   }
 
-  function setActiveTimeframe(btn) {
-    timeframeButtons.forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-  }
-
-  // Events
-  if (symbolSelect) {
-    symbolSelect.addEventListener('change', () => {
-      currentSymbol = symbolSelect.value;
-      loadChartData(currentSymbol, currentPoints);
-    });
-  }
-  timeframeButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const pts = parseInt(btn.getAttribute('data-points'), 10) || 60;
-      currentPoints = pts;
-      setActiveTimeframe(btn);
-      loadChartData(currentSymbol, currentPoints);
-    });
+  // Initialize all charts
+  Promise.all(canvases.map(loadCanvas)).then(() => {
+    // Periodic refresh
+    setInterval(refreshAll, 15000);
   });
-
-  // Initial load
-  loadChartData(currentSymbol, currentPoints);
-
-  // Auto-refresh every 15s
-  setInterval(() => loadChartData(currentSymbol, currentPoints), 15000);
 })();

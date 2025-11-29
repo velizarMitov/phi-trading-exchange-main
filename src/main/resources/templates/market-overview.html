@@ -3,16 +3,16 @@
 <body>
 <div th:replace="~{layout/main :: layout(~{::section})}">
     <section class="container">
-        <!-- Header -->
-        <div class="flex space-between align-center mb-3">
+        <!-- Hero: title + timeframe chips -->
+        <div class="market-hero">
             <div>
-                <h2 class="title">Market Overview</h2>
-                <div class="subtitle muted">Live prices from Phi-Trading pricing engine</div>
+                <h1 class="market-hero-title">Market Overview</h1>
+                <div class="market-hero-subtitle">Live prices and trends from the Phi-Trading pricing engine.</div>
             </div>
-            <div>
-                <span class="badge" th:text="'Updated: ' + ${serverTime}"></span>
-            </div>
+            <!-- Timeframe chips removed per request (1D, 1W, 1M, 1Y, ALL) -->
         </div>
+
+        <!-- Charts removed per request: non-working chart cards were eliminated to simplify the page -->
 
         <!-- Summary Cards -->
         <div class="grid grid-3 mb-3"

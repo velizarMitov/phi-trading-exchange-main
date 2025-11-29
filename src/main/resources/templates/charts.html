@@ -2,51 +2,29 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 <div th:replace="~{layout/main :: layout(~{::section})}">
-    <section class="container">
-        <!-- Header -->
-        <div class="flex space-between align-center mb-3">
-            <div>
-                <h2 class="title">Market Charts</h2>
-                <div class="subtitle muted">Mini TradingView-style view for live simulated prices.</div>
-            </div>
-        </div>
+    <section class="charts-page">
+        <h1 class="page-title">Market Charts</h1>
 
-        <!-- Controls -->
-        <div class="card mb-3">
-            <div class="flex align-center gap-2 wrap">
-                <div>
-                    <label class="muted" for="symbolSelect">Symbol</label>
-                    <select id="symbolSelect" class="input" style="min-width: 220px;">
-                        <option th:each="s : ${symbols}"
-                                th:value="${s.symbol}"
-                                th:selected="${s.symbol} == ${selectedSymbol}"
-                                th:text="${s.symbol} + ' - ' + ${s.name}">AAPL - Apple Inc.</option>
-                    </select>
-                </div>
-
-                <div class="ml-2">
-                    <span class="muted">Timeframe:</span>
-                    <div class="btn-group" role="group" aria-label="Timeframe">
-                        <button type="button" class="btn btn-secondary timeframe" data-points="30">Short</button>
-                        <button type="button" class="btn btn-secondary timeframe active" data-points="60">Medium</button>
-                        <button type="button" class="btn btn-secondary timeframe" data-points="120">Long</button>
+        <div class="chart-grid">
+            <!-- Render one compact chart card per instrument -->
+            <article class="chart-card" th:each="instrument : ${symbols}">
+                <header class="chart-card-header">
+                    <div class="chart-card-title-row">
+                        <span class="chart-symbol" th:text="${instrument.symbol}">AAPL</span>
+                        <span class="chart-name" th:text="${instrument.name}">Apple Inc.</span>
                     </div>
-                </div>
-            </div>
-        </div>
+                    <div class="chart-card-price-row">
+                        <span class="chart-last-price"
+                              th:text="${#numbers.formatDecimal(instrument.lastPrice, 1, 2)}">123.45</span>
+                        <span class="chart-change">+0.00%</span>
+                    </div>
+                </header>
 
-        <!-- Chart Card -->
-        <div class="card">
-            <canvas id="priceChart"
-                    th:attr="data-selected-symbol=${selectedSymbol},data-current-price=${currentPrice}"></canvas>
-            <div class="mt-2 flex space-between align-center">
-                <div>
-                    <strong>Symbol:</strong> <span id="currentSymbol" th:text="${selectedSymbol}">AAPL</span>
-                    <span class="muted">|</span>
-                    <strong>Price:</strong> <span id="currentPrice" th:text="${#numbers.formatDecimal(currentPrice, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                <div class="chart-card-body">
+                    <canvas class="market-chart-canvas"
+                            th:attr="data-symbol=${instrument.symbol}"></canvas>
                 </div>
-                <div class="muted">Simulated intraday price path</div>
-            </div>
+            </article>
         </div>
 
         <!-- Scripts -->
