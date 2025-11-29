@@ -5,6 +5,8 @@ import com.phitrading.exchange.common.util.UserCurrencyContext;
 import com.phitrading.exchange.domain.service.CurrencyService;
 import com.phitrading.exchange.domain.service.DashboardService;
 import com.phitrading.exchange.web.dto.DashboardView;
+import com.phitrading.exchange.domain.service.DashboardStatsService;
+import com.phitrading.exchange.web.dto.DashboardStats;
 import com.phitrading.exchange.web.dto.PortfolioRowView;
 import com.phitrading.exchange.web.dto.RecentOrderView;
 import org.slf4j.Logger;
@@ -27,14 +29,17 @@ public class DashboardController {
 
     private final DashboardService dashboardService;
     private final CurrencyService currencyService;
+    private final DashboardStatsService dashboardStatsService;
     private final UserCurrencyContext userCurrencyContext;
 
     public DashboardController(DashboardService dashboardService,
                                CurrencyService currencyService,
-                               UserCurrencyContext userCurrencyContext) {
+                               UserCurrencyContext userCurrencyContext,
+                               DashboardStatsService dashboardStatsService) {
         this.dashboardService = dashboardService;
         this.currencyService = currencyService;
         this.userCurrencyContext = userCurrencyContext;
+        this.dashboardStatsService = dashboardStatsService;
     }
 
     @GetMapping("/dashboard")
@@ -65,6 +70,9 @@ public class DashboardController {
         model.addAttribute("dashboard", converted);
         model.addAttribute("activeCurrency", current);
         model.addAttribute("supportedCurrencies", currencyService.getSupportedCurrencies());
+        // Add precomputed (or on-demand) aggregated stats
+        DashboardStats stats = dashboardStatsService.getStatsForUser(username);
+        model.addAttribute("dashboardStats", stats);
         return "dashboard";
     }
 

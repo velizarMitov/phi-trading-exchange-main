@@ -3,6 +3,8 @@ package phitrading.phitradingexchangemain.web.controller;
 import com.phitrading.exchange.domain.service.AdminSymbolService;
 import com.phitrading.exchange.integration.dto.CreateInstrumentRequest;
 import com.phitrading.exchange.integration.dto.InstrumentPriceDto;
+import com.phitrading.exchange.common.exception.SymbolInUseException;
+import com.phitrading.exchange.web.dto.AdminSymbolDeleteResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -78,6 +80,24 @@ public class AdminSymbolController {
             redirectAttributes.addFlashAttribute("error", "Failed to create symbol: " + ex.getMessage());
         }
         // PRG pattern
+        return "redirect:/admin/symbols";
+    }
+
+    @PostMapping("/symbols/{symbol}/delete")
+    public String deleteSymbol(@PathVariable String symbol,
+                               org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+        try {
+            AdminSymbolDeleteResult result = adminSymbolService.deleteSymbolSafely(symbol);
+            redirectAttributes.addFlashAttribute("deleteResult", result);
+            if (result.isDeleted()) {
+                redirectAttributes.addFlashAttribute("message", result.getMessage());
+            } else {
+                redirectAttributes.addFlashAttribute("error", result.getMessage());
+            }
+        } catch (Exception e) {
+            log.error("Failed to remove symbol {}", symbol, e);
+            redirectAttributes.addFlashAttribute("error", "Failed to remove symbol: " + e.getMessage());
+        }
         return "redirect:/admin/symbols";
     }
 }

@@ -27,6 +27,10 @@ public class SecurityConfig {
                 ).permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers(
+                    "/market",
+                    "/api/market/overview",
+                    "/charts",
+                    "/api/chart-data",
                     "/trade/**",
                     "/portfolio",
                     "/orders",

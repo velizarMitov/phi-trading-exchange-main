@@ -15,4 +15,13 @@ public interface PortfolioPositionRepository extends JpaRepository<PortfolioPosi
 
     // Count positions for a given username
     long countByUser_Username(String username);
+
+    // Check if any position exists for a symbol (used by admin delete guard)
+    boolean existsBySymbol(String symbol);
+
+    // Fetch all positions for a given symbol (used for safe delete)
+    java.util.List<PortfolioPosition> findBySymbol(String symbol);
+
+    // Count positions for a given symbol (helper)
+    long countBySymbol(String symbol);
 }

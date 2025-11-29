@@ -45,4 +45,11 @@ public interface PricingServiceClient {
      */
     @GetMapping("/api/instruments")
     List<InstrumentPriceDto> getAllInstruments();
+
+    /**
+     * Delete an instrument from the pricing service
+     * @param symbol the instrument symbol
+     */
+    @DeleteMapping("/api/instruments/{symbol}")
+    void deleteInstrument(@PathVariable("symbol") String symbol);
 }
