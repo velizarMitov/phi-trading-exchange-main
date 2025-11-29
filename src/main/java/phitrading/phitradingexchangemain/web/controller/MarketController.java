@@ -26,7 +26,12 @@ public class MarketController {
         String username = auth != null ? auth.getName() : "anonymous";
         List<MarketInstrumentView> instruments = marketService.getMarketOverviewForUser(username);
 
+        long advancers = instruments.stream().filter(MarketInstrumentView::isPositive).count();
+        long decliners = instruments.stream().filter(MarketInstrumentView::isNegative).count();
+
         model.addAttribute("marketInstruments", instruments);
+        model.addAttribute("advancers", advancers);
+        model.addAttribute("decliners", decliners);
         model.addAttribute("selectedCurrency", "USD");
         model.addAttribute("serverTime", LocalTime.now());
         model.addAttribute("pageTitle", "Market Overview");
