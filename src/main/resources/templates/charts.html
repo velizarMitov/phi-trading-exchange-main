@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:replace="~{layout/main :: layout(~{::section})}">
+    <section class="container">
+        <!-- Header -->
+        <div class="flex space-between align-center mb-3">
+            <div>
+                <h2 class="title">Market Charts</h2>
+                <div class="subtitle muted">Mini TradingView-style view for live simulated prices.</div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="card mb-3">
+            <div class="flex align-center gap-2 wrap">
+                <div>
+                    <label class="muted" for="symbolSelect">Symbol</label>
+                    <select id="symbolSelect" class="input" style="min-width: 220px;">
+                        <option th:each="s : ${symbols}"
+                                th:value="${s.symbol}"
+                                th:selected="${s.symbol} == ${selectedSymbol}"
+                                th:text="${s.symbol} + ' - ' + ${s.name}">AAPL - Apple Inc.</option>
+                    </select>
+                </div>
+
+                <div class="ml-2">
+                    <span class="muted">Timeframe:</span>
+                    <div class="btn-group" role="group" aria-label="Timeframe">
+                        <button type="button" class="btn btn-secondary timeframe" data-points="30">Short</button>
+                        <button type="button" class="btn btn-secondary timeframe active" data-points="60">Medium</button>
+                        <button type="button" class="btn btn-secondary timeframe" data-points="120">Long</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart Card -->
+        <div class="card">
+            <canvas id="priceChart"
+                    th:attr="data-selected-symbol=${selectedSymbol},data-current-price=${currentPrice}"></canvas>
+            <div class="mt-2 flex space-between align-center">
+                <div>
+                    <strong>Symbol:</strong> <span id="currentSymbol" th:text="${selectedSymbol}">AAPL</span>
+                    <span class="muted">|</span>
+                    <strong>Price:</strong> <span id="currentPrice" th:text="${#numbers.formatDecimal(currentPrice, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                </div>
+                <div class="muted">Simulated intraday price path</div>
+            </div>
+        </div>
+
+        <!-- Scripts -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script th:src="@{/js/charts.js}"></script>
+    </section>
+</div>
+</body>
+</html>

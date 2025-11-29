@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:replace="~{layout/main :: layout(~{::section})}">
+    <section class="container">
+        <!-- Header -->
+        <div class="flex space-between align-center mb-3">
+            <div>
+                <h2 class="title">Market Overview</h2>
+                <div class="subtitle muted">Live prices from Phi-Trading pricing engine</div>
+            </div>
+            <div>
+                <span class="badge" th:text="'Updated: ' + ${serverTime}"></span>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="grid grid-3 mb-3"
+             th:with="total=${#lists.size(marketInstruments)},
+                      advancers=${marketInstruments.?[positive].size()},
+                      decliners=${marketInstruments.?[negative].size()}">
+            <div class="card compact">
+                <div class="card-title">Total Instruments</div>
+                <div class="card-value" th:text="${total}">0</div>
+            </div>
+            <div class="card compact">
+                <div class="card-title">Advancers</div>
+                <div class="card-value text-green" th:text="${advancers}">0</div>
+            </div>
+            <div class="card compact">
+                <div class="card-title">Decliners</div>
+                <div class="card-value text-red" th:text="${decliners}">0</div>
+            </div>
+        </div>
+
+        <!-- Instruments Table -->
+        <div class="table-wrapper">
+            <table class="table table-dark">
+                <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Name</th>
+                    <th>Last</th>
+                    <th>Prev Close</th>
+                    <th>Change</th>
+                    <th>Change %</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody id="marketRows">
+                <tr th:each="instrument : ${marketInstruments}"
+                    th:attr="data-symbol=${instrument.symbol}"
+                    th:classappend="${instrument.positive} ? 'row-up' : (${instrument.negative} ? 'row-down' : 'row-flat')">
+                    <td class="mono uppercase" th:text="${instrument.symbol}">AAPL</td>
+                    <td th:text="${instrument.name}">Apple Inc.</td>
+                    <td class="price" th:attr="data-field='last'"
+                        th:text="${selectedCurrency == 'USD' ? '$ ' + #numbers.formatDecimal(instrument.lastPrice, 1, 'COMMA', 2, 'POINT') : instrument.lastPrice}">$ 0.00</td>
+                    <td class="prev"
+                        th:text="${selectedCurrency == 'USD' ? '$ ' + #numbers.formatDecimal(instrument.previousClose, 1, 'COMMA', 2, 'POINT') : instrument.previousClose}">$ 0.00</td>
+                    <td class="change" th:attr="data-field='change'"
+                        th:classappend="${instrument.positive} ? 'text-green' : (${instrument.negative} ? 'text-red' : 'text-muted')"
+                        th:text="${(instrument.positive ? '▲ ' : (instrument.negative ? '▼ ' : '')) + #numbers.formatDecimal(instrument.changeAbs, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+                    <td class="changePct" th:attr="data-field='changePct'"
+                        th:classappend="${instrument.positive} ? 'text-green' : (${instrument.negative} ? 'text-red' : 'text-muted')"
+                        th:text="${#numbers.formatDecimal(instrument.changePct, 1, 'COMMA', 2, 'POINT')} + ' %'">0.00 %</td>
+                    <td>
+                        <a class="btn btn-xs" th:href="@{/trade/buy(symbol=${instrument.symbol})}">Trade</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Polling Script -->
+        <script th:inline="none">
+            (function () {
+                const tbody = document.getElementById('marketRows');
+                function applyRowStyle(row, change) {
+                    row.classList.remove('row-up','row-down','row-flat');
+                    row.classList.add(change > 0 ? 'row-up' : (change < 0 ? 'row-down' : 'row-flat'));
+                }
+                function formatMoneyUSD(v) {
+                    try { return '$ ' + Number(v).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}); } catch(e) { return v; }
+                }
+                function iconFor(change) { return change > 0 ? '▲ ' : (change < 0 ? '▼ ' : ''); }
+                function applyColor(el, change) {
+                    el.classList.remove('text-green','text-red','text-muted');
+                    if (change > 0) el.classList.add('text-green');
+                    else if (change < 0) el.classList.add('text-red');
+                    else el.classList.add('text-muted');
+                }
+                function upsertRow(i) {
+                    const sym = i.symbol;
+                    let row = tbody.querySelector(`tr[data-symbol="${sym}"]`);
+                    const change = Number(i.changeAbs);
+                    const changePct = Number(i.changePct);
+                    if (!row) {
+                        row = document.createElement('tr');
+                        row.setAttribute('data-symbol', sym);
+                        row.innerHTML = `
+                            <td class="mono uppercase">${sym}</td>
+                            <td>${i.name || ''}</td>
+                            <td class="price" data-field="last"></td>
+                            <td class="prev"></td>
+                            <td class="change" data-field="change"></td>
+                            <td class="changePct" data-field="changePct"></td>
+                            <td><a class="btn btn-xs" href="/trade/buy?symbol=${encodeURIComponent(sym)}">Trade</a></td>`;
+                        tbody.appendChild(row);
+                    }
+                    const last = row.querySelector('[data-field="last"]');
+                    const ch = row.querySelector('[data-field="change"]');
+                    const chp = row.querySelector('[data-field="changePct"]');
+                    const prev = row.querySelector('.prev');
+
+                    last.textContent = formatMoneyUSD(i.lastPrice);
+                    prev.textContent = formatMoneyUSD(i.previousClose);
+                    ch.textContent = iconFor(change) + (Number(i.changeAbs)).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    chp.textContent = (changePct).toFixed(2) + ' %';
+
+                    applyColor(ch, change);
+                    applyColor(chp, change);
+                    applyRowStyle(row, change);
+                }
+                function refresh() {
+                    fetch('/api/market/overview', { credentials: 'same-origin' })
+                        .then(r => r.ok ? r.json() : Promise.reject(r.status))
+                        .then(list => Array.isArray(list) ? list.forEach(upsertRow) : null)
+                        .catch(() => {});
+                }
+                setInterval(refresh, 10000);
+            })();
+        </script>
+    </section>
+    </div>
+</body>
+</html>

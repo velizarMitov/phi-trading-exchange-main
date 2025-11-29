@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:replace="~{layout/main :: layout(~{::section})}">
+    <section class="container text-center">
+        <div class="mt-4 mb-3">
+            <h2 class="title" th:text="${title} ?: 'Oops, something went wrong'"></h2>
+            <p class="muted" th:text="${message} ?: 'An error occurred while processing your request.'"></p>
+        </div>
+        <div class="mb-4">
+            <a class="btn btn-primary" th:href="@{/}">Back to Home</a>
+        </div>
+    </section>
+</div>
+</body>
+</html>
