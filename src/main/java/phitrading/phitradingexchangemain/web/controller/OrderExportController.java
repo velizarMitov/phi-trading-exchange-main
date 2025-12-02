@@ -15,6 +15,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.io.OutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.URLEncoder;
 import java.awt.Color;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
@@ -35,32 +38,33 @@ public class OrderExportController {
     }
 
     @GetMapping("/orders/export/csv")
-    public void exportCsv(Principal principal, HttpServletResponse response) throws Exception {
+    public void exportCsv(Principal principal, HttpServletResponse response) throws IOException {
         String username = principal != null ? principal.getName() : "anonymous";
         List<OrderRowView> orders = orderViewService.getUserOrders(username);
 
-        String filename = "orders-" + username + ".csv";
+        String safeFilename = "orders-" + (username != null ? URLEncoder.encode(username, StandardCharsets.UTF_8) : "anonymous") + ".csv";
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        response.setContentType("text/csv;charset=UTF-8");
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
+        response.setContentType("text/csv");
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + safeFilename + "\"");
 
-        // Write BOM for Excel UTF-8 compatibility
-        response.getOutputStream().write(new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF});
+        try (PrintWriter writer = response.getWriter()) {
+            // Write BOM via writer for Excel compatibility
+            writer.write('\uFEFF');
 
-        var writer = response.getWriter();
-        writer.println("Date,Symbol,Side,Quantity,Price,Status");
-        for (OrderRowView o : orders) {
-            String date = formatDate(o.getExecutedAt() != null ? o.getExecutedAt() : o.getCreatedAt());
-            writer.println(String.join(",",
-                    csv(date),
-                    csv(o.getSymbol()),
-                    csv(o.getSide()),
-                    csv(o.getQuantity() != null ? o.getQuantity().toPlainString() : ""),
-                    csv(o.getExecutionPrice() != null ? o.getExecutionPrice().toPlainString() : ""),
-                    csv(o.getStatus())
-            ));
+            writer.println("Date,Symbol,Side,Quantity,Price,Status");
+            for (OrderRowView o : orders) {
+                String date = formatDate(o.getExecutedAt() != null ? o.getExecutedAt() : o.getCreatedAt());
+                writer.println(String.join(",",
+                        csv(date),
+                        csv(o.getSymbol()),
+                        csv(o.getSide()),
+                        csv(o.getQuantity() != null ? o.getQuantity().toPlainString() : ""),
+                        csv(o.getExecutionPrice() != null ? o.getExecutionPrice().toPlainString() : ""),
+                        csv(o.getStatus())
+                ));
+            }
+            writer.flush();
         }
-        writer.flush();
         log.info("Exported {} orders to CSV for user={}", orders.size(), username);
     }
 
