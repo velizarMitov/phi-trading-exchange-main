@@ -6,9 +6,15 @@
         </div>
 
         <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                <h3 class="h2" style="margin: 0;">Order History</h3>
-                <span class="badge success">All Time</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 12px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <h3 class="h2" style="margin: 0;">Order History</h3>
+                    <span class="badge success">All Time</span>
+                </div>
+                <div>
+                    <a class="btn btn-secondary" th:href="@{/orders/export/csv}">⬇ Export CSV</a>
+                    <a class="btn" th:href="@{/orders/export/pdf}">⬇ Export PDF</a>
+                </div>
             </div>
 
             <div th:if="${orders != null and !orders.isEmpty()}">
