@@ -14,11 +14,10 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import java.io.OutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.URLEncoder;
 import java.awt.Color;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.time.LocalDateTime;
@@ -42,15 +41,13 @@ public class OrderExportController {
         String username = principal != null ? principal.getName() : "anonymous";
         List<OrderRowView> orders = orderViewService.getUserOrders(username);
 
-        String safeFilename = "orders-" + (username != null ? URLEncoder.encode(username, StandardCharsets.UTF_8) : "anonymous") + ".csv";
+        String safeUsername = URLEncoder.encode(username, StandardCharsets.UTF_8);
+        String filename = "orders-" + safeUsername + ".csv";
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType("text/csv");
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + safeFilename + "\"");
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
 
-        try (PrintWriter writer = response.getWriter()) {
-            // Write BOM via writer for Excel compatibility
-            writer.write('\uFEFF');
-
+        try (var writer = response.getWriter()) {
             writer.println("Date,Symbol,Side,Quantity,Price,Status");
             for (OrderRowView o : orders) {
                 String date = formatDate(o.getExecutedAt() != null ? o.getExecutedAt() : o.getCreatedAt());
