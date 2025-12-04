@@ -4,14 +4,10 @@ import com.phitrading.exchange.domain.entity.UserAccount;
 import com.phitrading.exchange.domain.repository.UserAccountRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class JpaUserDetailsService implements UserDetailsService {
@@ -25,20 +21,22 @@ public class JpaUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserAccount ua = userAccountRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
-        log.info("Loaded user for authentication: {}", username);
-        // Default authority: ROLE_USER. Grant ROLE_ADMIN to the seeded admin account.
-        boolean isAdmin = "admin".equalsIgnoreCase(ua.getUsername());
-        List<SimpleGrantedAuthority> authorities = isAdmin
-                ? List.of(new SimpleGrantedAuthority("ROLE_USER"), new SimpleGrantedAuthority("ROLE_ADMIN"))
-                : List.of(new SimpleGrantedAuthority("ROLE_USER"));
+    public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
+        // For login we treat the provided principal as an email
+        UserAccount ua = userAccountRepository.findByEmail(usernameOrEmail)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + usernameOrEmail));
+        log.info("Loaded user for authentication: {}", usernameOrEmail);
 
-        return new User(
-                ua.getUsername(),
-                ua.getPasswordHash(),
-                authorities
-        );
+        String role = ua.getRole() != null ? ua.getRole() : "USER";
+
+        return org.springframework.security.core.userdetails.User
+                .withUsername(ua.getEmail())
+                .password(ua.getPasswordHash())
+                .authorities("ROLE_" + role)
+                .accountExpired(false)
+                .accountLocked(false)
+                .credentialsExpired(false)
+                .disabled(false)
+                .build();
     }
 }

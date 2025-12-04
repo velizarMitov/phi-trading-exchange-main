@@ -35,7 +35,7 @@ public class AdminBootstrapRunner implements CommandLineRunner {
     public void run(String... args) {
         final String adminUsername = "ADMIN";
         final String adminEmail = "admin@phi-trading.local";
-        final String rawPassword = "admin123";
+        final String rawPassword = "123123";
 
         boolean exists = userAccountRepository.findByUsername(adminUsername).isPresent();
         if (exists) {
@@ -48,9 +48,10 @@ public class AdminBootstrapRunner implements CommandLineRunner {
         admin.setEmail(adminEmail);
         admin.setPasswordHash(passwordEncoder.encode(rawPassword));
         admin.setCashBalance(new BigDecimal("100000.00"));
+        admin.setRole("ADMIN");
         admin.setCreatedAt(LocalDateTime.now());
         admin.setUpdatedAt(LocalDateTime.now());
         userAccountRepository.save(admin);
-        log.info("Default admin user created: username={}, password={}", adminUsername, rawPassword);
+        log.info("Default admin user created: username={}, email={}, password=****", adminUsername, adminEmail);
     }
 }

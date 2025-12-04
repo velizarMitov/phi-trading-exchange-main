@@ -32,6 +32,9 @@ public class UserAccount {
     private BigDecimal cashBalance = BigDecimal.ZERO;
 
     @Column(nullable = false)
+    private String role = "USER";
+
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
     @Column(nullable = false)
