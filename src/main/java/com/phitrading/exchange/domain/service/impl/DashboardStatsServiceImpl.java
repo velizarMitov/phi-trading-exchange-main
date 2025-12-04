@@ -47,8 +47,7 @@ public class DashboardStatsServiceImpl implements DashboardStatsService {
             throw new IllegalArgumentException("Username must not be null or blank when computing stats.");
         }
 
-        // Safe lookup to avoid NonUniqueResultException if duplicates exist
-        var user = userRepo.findFirstByUsernameOrderByUpdatedAtDesc(username)
+        var user = userRepo.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
 
         BigDecimal cash = zero(user.getCashBalance());

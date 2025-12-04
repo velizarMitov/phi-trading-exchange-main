@@ -54,8 +54,8 @@ public class PortfolioServiceImpl implements PortfolioService {
             throw new IllegalArgumentException("Username must not be null or blank when loading portfolio.");
         }
 
-        // Ensure user exists (optional but good validation) – use safe variant to avoid NonUniqueResultException
-        userRepo.findFirstByUsernameOrderByUpdatedAtDesc(username).orElseThrow(() ->
+        // Ensure user exists (optional but good validation)
+        userRepo.findByUsername(username).orElseThrow(() ->
                 new IllegalArgumentException("User not found: " + username));
 
         List<PortfolioPosition> positions = portfolioRepo.findAllByUser_Username(username);

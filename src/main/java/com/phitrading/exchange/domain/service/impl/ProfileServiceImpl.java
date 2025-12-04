@@ -49,8 +49,7 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
     @Transactional(readOnly = true)
     public UserProfileDto getProfile(String username) {
-        // Intentionally take the latest user row if duplicates exist to avoid NonUniqueResultException
-        UserAccount user = userAccountRepository.findFirstByUsernameOrderByUpdatedAtDesc(username)
+        UserAccount user = userAccountRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
 
         BigDecimal cash = safeMoney(user.getCashBalance());
@@ -91,7 +90,7 @@ public class ProfileServiceImpl implements ProfileService {
     public void updateProfile(String username, UpdateProfileRequest request) {
         Objects.requireNonNull(request, "UpdateProfileRequest must not be null");
 
-        UserAccount user = userAccountRepository.findFirstByUsernameOrderByUpdatedAtDesc(username)
+        UserAccount user = userAccountRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
 
         String newEmail = request.getEmail();
@@ -99,8 +98,7 @@ public class ProfileServiceImpl implements ProfileService {
             throw new IllegalArgumentException("Email must not be blank");
         }
 
-        // Use safe variant in case multiple rows exist for the same email; we still enforce uniqueness at app level
-        userAccountRepository.findFirstByEmailOrderByUpdatedAtDesc(newEmail)
+        userAccountRepository.findByEmail(newEmail)
                 .filter(existing -> !existing.getId().equals(user.getId()))
                 .ifPresent(existing -> { throw new IllegalArgumentException("Email is already in use"); });
 

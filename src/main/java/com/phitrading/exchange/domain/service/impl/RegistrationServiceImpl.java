@@ -38,8 +38,7 @@ public class RegistrationServiceImpl implements RegistrationService {
             throw new IllegalArgumentException("Password is required");
         }
 
-        // Safe check to avoid NonUniqueResultException if duplicates exist: take latest row
-        userRepo.findFirstByUsernameOrderByUpdatedAtDesc(username).ifPresent(u -> {
+        userRepo.findByUsername(username).ifPresent(u -> {
             throw new IllegalArgumentException("Username already taken");
         });
 

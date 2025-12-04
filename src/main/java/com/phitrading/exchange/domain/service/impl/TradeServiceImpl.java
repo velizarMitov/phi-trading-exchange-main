@@ -64,8 +64,7 @@ public class TradeServiceImpl implements TradeService {
                 throw new IllegalArgumentException("No price available for symbol: " + symbol);
             }
 
-            // Use safe variant to avoid NonUniqueResultException if duplicate rows exist for a username.
-            UserAccount user = userAccountRepository.findFirstByUsernameOrderByUpdatedAtDesc(username)
+            UserAccount user = userAccountRepository.findByUsername(username)
                     .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
 
             BigDecimal qty = BigDecimal.valueOf(quantity);
@@ -150,8 +149,8 @@ public class TradeServiceImpl implements TradeService {
                 throw new IllegalArgumentException("No price available for symbol: " + symbol);
             }
 
-            // Load user and position (safe variant to avoid NonUniqueResultException on duplicates)
-            UserAccount user = userAccountRepository.findFirstByUsernameOrderByUpdatedAtDesc(username)
+            // Load user and position
+            UserAccount user = userAccountRepository.findByUsername(username)
                     .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
 
             PortfolioPosition position = portfolioPositionRepository.findByUserAndSymbol(user, symbol)

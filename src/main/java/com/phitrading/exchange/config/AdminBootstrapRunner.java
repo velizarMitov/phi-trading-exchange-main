@@ -37,8 +37,7 @@ public class AdminBootstrapRunner implements CommandLineRunner {
         final String adminEmail = "admin@phi-trading.local";
         final String rawPassword = "123123";
 
-        // Safe lookup: avoid potential NonUniqueResultException by selecting the latest row if duplicates exist
-        boolean exists = userAccountRepository.findFirstByUsernameOrderByUpdatedAtDesc(adminUsername).isPresent();
+        boolean exists = userAccountRepository.findByUsername(adminUsername).isPresent();
         if (exists) {
             log.info("Admin user already exists, skipping bootstrap");
             return;
