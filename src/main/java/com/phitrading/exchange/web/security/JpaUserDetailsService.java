@@ -22,8 +22,10 @@ public class JpaUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
-        // For login we treat the provided principal as an email
-        UserAccount ua = userAccountRepository.findByEmail(usernameOrEmail)
+        // For login we treat the provided principal as an email.
+        // Use a safe repository method that orders by updatedAt and returns the first result to avoid
+        // JPA getSingleResult()/NonUniqueResultException in case duplicate user rows exist for the same email.
+        UserAccount ua = userAccountRepository.findFirstByEmailOrderByUpdatedAtDesc(usernameOrEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + usernameOrEmail));
         log.info("Loaded user for authentication: {}", usernameOrEmail);
 

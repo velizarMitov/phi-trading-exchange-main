@@ -45,8 +45,8 @@ public class DashboardServiceImpl implements DashboardService {
             throw new IllegalArgumentException("Username must not be null or blank when loading dashboard.");
         }
 
-        // Load user for cash balance
-        UserAccount user = userAccountRepository.findByUsername(username)
+        // Load user for cash balance (safe variant to avoid NonUniqueResultException on duplicates)
+        UserAccount user = userAccountRepository.findFirstByUsernameOrderByUpdatedAtDesc(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
         BigDecimal cash = defaultZero(user.getCashBalance());
 
