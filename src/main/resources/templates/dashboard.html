@@ -11,7 +11,7 @@
                         <a th:each="c : ${supportedCurrencies}"
                            th:href="@{'/dashboard'(currency=${c})}"
                            class="btn"
-                           th:classappend="${activeCurrency} == ${c} ? ' btn-primary' : ' btn-ghost'"
+                           th:classappend="${activeCurrency?.name()} == ${c?.name()} ? ' btn-primary' : ' btn-ghost'"
                            th:text="${c}">USD</a>
                     </div>
                     <a class="btn btn-primary" th:href="@{/trade/buy}">⚡ Quick Trade</a>
@@ -24,7 +24,7 @@
             <div class="card">
                 <div class="muted mb-1" style="font-weight: 600;">Total Account Value</div>
                 <div class="h1">
-                    <span th:text="${activeCurrency == T(com.phitrading.exchange.common.CurrencyCode).USD ? '$' : (activeCurrency == T(com.phitrading.exchange.common.CurrencyCode).EUR ? '€' : 'лв')}">$</span>
+                    <span th:text="${activeCurrency?.name() == 'USD' ? '$' : (activeCurrency?.name() == 'EUR' ? '€' : 'лв')}">$</span>
                     <span th:text="${#numbers.formatDecimal(dashboard.totalAccountValue, 1, 'POINT', 2, 'POINT')}">0.00</span>
                     <span class="muted" style="font-size: 12px;">&nbsp;<span th:text="${activeCurrency}">USD</span></span>
                 </div>
@@ -33,7 +33,7 @@
             <div class="card">
                 <div class="muted mb-1" style="font-weight: 600;">Cash Balance</div>
                 <div class="h1">
-                    <span th:text="${activeCurrency == T(com.phitrading.exchange.common.CurrencyCode).USD ? '$' : (activeCurrency == T(com.phitrading.exchange.common.CurrencyCode).EUR ? '€' : 'лв')}">$</span>
+                    <span th:text="${activeCurrency?.name() == 'USD' ? '$' : (activeCurrency?.name() == 'EUR' ? '€' : 'лв')}">$</span>
                     <span th:text="${#numbers.formatDecimal(dashboard.cashBalance, 1, 'POINT', 2, 'POINT')}">0.00</span>
                     <span class="muted" style="font-size: 12px;">&nbsp;<span th:text="${activeCurrency}">USD</span></span>
                 </div>
@@ -42,7 +42,7 @@
                 <div class="muted mb-1" style="font-weight: 600;">Total P/L</div>
                 <div class="h1"
                      th:classappend="${dashboard.totalPnlAbs > 0 ? ' badge success' : (dashboard.totalPnlAbs < 0 ? ' badge canceled' : '')}">
-                    <span th:text="${activeCurrency == T(com.phitrading.exchange.common.CurrencyCode).USD ? '$' : (activeCurrency == T(com.phitrading.exchange.common.CurrencyCode).EUR ? '€' : 'лв')}">$</span>
+                    <span th:text="${activeCurrency?.name() == 'USD' ? '$' : (activeCurrency?.name() == 'EUR' ? '€' : 'лв')}">$</span>
                     <span th:text="${#numbers.formatDecimal(dashboard.totalPnlAbs, 1, 'POINT', 2, 'POINT')}">0.00</span>
                     <span class="muted" style="font-size: 12px;">&nbsp;<span th:text="${activeCurrency}">USD</span></span>
                 </div>
@@ -74,13 +74,13 @@
                                 <td><strong th:text="${row.symbol}">AAPL</strong></td>
                                 <td th:text="${#numbers.formatDecimal(row.quantity, 1, 'POINT', 0, 'POINT')}">0</td>
                                 <td class="text-right">
-                                    <span th:text="${activeCurrency == T(com.phitrading.exchange.common.CurrencyCode).USD ? '$' : (activeCurrency == T(com.phitrading.exchange.common.CurrencyCode).EUR ? '€' : 'лв')}">$</span>
+                                    <span th:text="${activeCurrency?.name() == 'USD' ? '$' : (activeCurrency?.name() == 'EUR' ? '€' : 'лв')}">$</span>
                                     <span th:text="${#numbers.formatDecimal(row.currentPrice != null && row.quantity != null ? row.currentPrice.multiply(row.quantity) : 0, 1, 'POINT', 2, 'POINT')}">0.00</span>
                                 </td>
                                 <td>
                                     <span th:classappend="${row.pnlAbs > 0 ? 'badge success' : (row.pnlAbs < 0 ? 'badge canceled' : 'badge')}"
                                           >
-                                        <span th:text="${activeCurrency == T(com.phitrading.exchange.common.CurrencyCode).USD ? '$' : (activeCurrency == T(com.phitrading.exchange.common.CurrencyCode).EUR ? '€' : 'лв')}">$</span>
+                                        <span th:text="${activeCurrency?.name() == 'USD' ? '$' : (activeCurrency?.name() == 'EUR' ? '€' : 'лв')}">$</span>
                                         <span th:text="${#numbers.formatDecimal(row.pnlAbs, 1, 'POINT', 2, 'POINT')}">0.00</span>
                                     </span>
                                 </td>
@@ -103,7 +103,7 @@
                     <li style="margin-bottom: 6px;">Open orders: <strong>—</strong></li>
                     <li style="margin-top: 6px;">Portfolio value:
                         <strong>
-                            <span th:text="${activeCurrency == T(com.phitrading.exchange.common.CurrencyCode).USD ? '$' : (activeCurrency == T(com.phitrading.exchange.common.CurrencyCode).EUR ? '€' : 'лв')}">$</span>
+                            <span th:text="${activeCurrency?.name() == 'USD' ? '$' : (activeCurrency?.name() == 'EUR' ? '€' : 'лв')}">$</span>
                             <span th:text="${#numbers.formatDecimal(dashboard.totalCurrentValue, 1, 'POINT', 2, 'POINT')}">0.00</span>
                             <span class="muted" style="font-size: 12px;">&nbsp;<span th:text="${activeCurrency}">USD</span></span>
                         </strong>
@@ -145,7 +145,7 @@
                             </td>
                             <td th:text="${#numbers.formatDecimal(o.quantity, 1, 'POINT', 0, 'POINT')}">0</td>
                             <td>
-                                <span th:text="${activeCurrency == T(com.phitrading.exchange.common.CurrencyCode).USD ? '$' : (activeCurrency == T(com.phitrading.exchange.common.CurrencyCode).EUR ? '€' : 'лв')}">$</span>
+                                <span th:text="${activeCurrency?.name() == 'USD' ? '$' : (activeCurrency?.name() == 'EUR' ? '€' : 'лв')}">$</span>
                                 <span th:text="${#numbers.formatDecimal(o.executionPrice, 1, 'POINT', 2, 'POINT')}">0.00</span>
                                 <span class="muted" style="font-size: 11px;">&nbsp;<span th:text="${activeCurrency}">USD</span></span>
                             </td>
