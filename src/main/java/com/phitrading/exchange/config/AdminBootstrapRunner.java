@@ -33,8 +33,8 @@ public class AdminBootstrapRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        final String adminUsername = "admin";
-        final String adminEmail = "admin@phi-trading.com";
+        final String adminUsername = "ADMIN";
+        final String adminEmail = "admin@phi-trading.local";
         final String rawPassword = "admin123";
 
         boolean exists = userAccountRepository.findByUsername(adminUsername).isPresent();
