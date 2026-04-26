@@ -92,35 +92,6 @@ Main configuration is in `src/main/resources/application.properties`.
 - Default admin user
   - If provisioned via data.sql or an initializer, you can change credentials or seed data there.
 
-## 🔐 Default Users
-
-The application includes predefined users for evaluation:
-
-### **Admin Account**
-
-```pgsql
-username: admin
-password: 123123
-role: ADMIN
-```
-
-```yaml
-Admin panel:
-  http://localhost:8080/admin/symbols
-```
-
-```sql
-```
-
-These credentials are automatically loaded from `data.sql` (or initializer) when the project starts.
-
-### **User Account**
-
-```pgsql
-username: user
-password: user123
-role: USER
-```
 
 ## Testing
 The project includes a mix of unit, API (Web/MockMvc), and integration tests (H2/MySQL per configuration).
